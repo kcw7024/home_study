@@ -19,11 +19,7 @@ url = 'https://openapi.naver.com/v1/search/movie.json'
 
 
 params = {
-    'query' : '관상',
-    'items' : [
-        "image":
-        
-    ]
+    'query' : '관상'
 }
 
 
@@ -31,6 +27,9 @@ response = requests.get(url, headers=headers, params=params)
 
 print(response.text)
  
+import matplotlib.pyplot as plt
 from PIL import Image
 
-im = Image.open()
+image = Image.open('D:\home_study\_data\img.jpg')
+plt.imshow(image)
+plt.show()
