@@ -6,10 +6,11 @@ import os
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from urllib.request import Request, urlopen
 
 #selenium 최신버전으로 문법이 바꼈다. 바뀐걸로 적용해줌.
 #Chrome 드라이버 자동으로 잡아주는게 추가됨(Service, ChromeDriverManager)
-
+#Xpath 위치 잘 봐야함
 
 def createDirectory(directory):
     try:
@@ -49,24 +50,22 @@ def crawling_img(name):
     dir = "D:/project/actor"+ "/" + name
     #끝까지 다내려서 개느림
     
-    createDirectory(dir) #폴더 생성
+    createDirectory(dir) #폴더 생성해준다
     count = 1
     for img in imgs:
         try:
             img.click()
             time.sleep(2)
-            imgUrl = driver.find_element(By.XPATH,value=(
-                '//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[2]/div[1]/a/img').get_attribute(
-                "src"))
+            imgUrl = driver.find_element(By.XPATH,'//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[3]/div/a/img').get_attribute("src")
             path = "D:/project/actor/" + name + "/"
-            urllib.request.urlretrieve(imgUrl, path + name + str(count) + ".jpg")
+            urllib.request.urlretrieve(imgUrl, path + "img_" + str(count) + ".jpg")
             count = count + 1
-            if count >= 3:
+            if count >= 160: #이미지 장수 선택 
                 break
         except:
-            pass
+            print("안되는디") #경로못찾으면 패~쓰~~~~~
     driver.close()
-actors = ["김혜수"]
+actors = ["강혜정"]
 
 for actor in actors:
     crawling_img(actor)
