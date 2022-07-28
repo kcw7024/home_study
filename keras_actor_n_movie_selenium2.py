@@ -8,9 +8,11 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from urllib.request import Request, urlopen
 
+#원본이미지로 저장가능한 크롤링소스로 변경했음.
 #selenium 최신버전으로 문법이 바꼈다. 바뀐걸로 적용해줌.
 #Chrome 드라이버 자동으로 잡아주는게 추가됨(Service, ChromeDriverManager)
-#Xpath 위치 잘 봐야함
+#원하는 Xpath 위치 잘 봐야함
+#except 작업을 아예 빼주거나 pass로 넣어버리면 작업이 멈추거나 오류남. 걍 에러표시라도 해줌
 
 def createDirectory(directory):
     try:
@@ -41,7 +43,7 @@ def crawling_img(name):
         new_height = driver.execute_script("return document.body.scrollHeight")
         if new_height == last_height:
             try:
-                driver.find_elements(By.CSS_SELECTOR,".mye4qd").click()
+                driver.find_elements(By.CSS_SELECTOR,".mye4qd").click() #여러개라서 s붙음. 이거 조심해야됨 
             except:
                 break
         last_height = new_height
@@ -58,14 +60,14 @@ def crawling_img(name):
             time.sleep(2)
             imgUrl = driver.find_element(By.XPATH,'//*[@id="Sva75c"]/div/div/div[3]/div[2]/c-wiz/div/div[1]/div[1]/div[3]/div/a/img').get_attribute("src")
             path = "D:/project/actor/" + name + "/"
-            urllib.request.urlretrieve(imgUrl, path + "img_" + str(count) + ".jpg")
+            urllib.request.urlretrieve(imgUrl, path + "img" + str(count) + ".jpg")
             count = count + 1
-            if count >= 160: #이미지 장수 선택 
+            if count >= 501: #이미지 장수 선택 
                 break
         except:
             print("안되는디") #경로못찾으면 패~쓰~~~~~
     driver.close()
-actors = ["강혜정"]
-
+actors = ["이정재 인터뷰"] 
+ 
 for actor in actors:
     crawling_img(actor)
