@@ -1,3 +1,6 @@
+#얘는 썸네일로 긁어와서 사이즈가 너무 작음
+
+
 from selenium import webdriver 
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By

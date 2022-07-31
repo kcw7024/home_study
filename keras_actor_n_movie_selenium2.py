@@ -43,14 +43,14 @@ def crawling_img(name):
         new_height = driver.execute_script("return document.body.scrollHeight")
         if new_height == last_height:
             try:
-                driver.find_elements(By.CSS_SELECTOR,".mye4qd").click() #여러개라서 s붙음. 이거 조심해야됨 
+                driver.find_elements(By.CSS_SELECTOR,".mye4qd").click() #여러개라서 s붙음
             except:
                 break
         last_height = new_height
 
     imgs = driver.find_elements(By.CSS_SELECTOR,".rg_i.Q4LuWd")
     dir = "D:/project/actor"+ "/" + name
-    #끝까지 다내려서 개느림
+    #끝까지 다내려서 느리다.
     
     createDirectory(dir) #폴더 생성해준다
     count = 1
@@ -65,9 +65,9 @@ def crawling_img(name):
             if count >= 501: #이미지 장수 선택 
                 break
         except:
-            print("안되는디") #경로못찾으면 패~쓰~~~~~
+            print("저장안됨") #경로못찾으면 패~쓰~~~~~
     driver.close()
-actors = ["이정재 인터뷰"] 
+actors = ["이정재"] 
  
 for actor in actors:
     crawling_img(actor)
