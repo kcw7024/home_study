@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 
-path_dir = "d:/project/test_face"
+path_dir = "d:/project/actor/actor/actor"
 file_list = os.listdir(path_dir)
 
 print(file_list)

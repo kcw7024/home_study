@@ -67,7 +67,7 @@ def crawling_img(name):
         except:
             print("저장안됨") #경로못찾으면 패~쓰~~~~~
     driver.close()
-actors = ["이정재"] 
+actors = ["손예진"] 
  
 for actor in actors:
     crawling_img(actor)
