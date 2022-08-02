@@ -11,7 +11,8 @@ from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.layers import Dense, Flatten, MaxPooling2D, Conv2D, Dropout
 
 
-actor_face_dir = 'D:/project/test_actor/test_actor/test_actor'
+#작업할 이미지들이 있는 폴더 경로를 선언 해준다.
+actor_face_dir = 'D:/project/actor/actor/actor'
 
 #클래스별 카테고리를 지정해준다.
 categories = ['cho_seungwoo', 'choi_minsik','chun_woohee','e_som','go_ahseong',
@@ -23,14 +24,47 @@ categories = ['cho_seungwoo', 'choi_minsik','chun_woohee','e_som','go_ahseong',
 
 classes = len(categories) #클래스 카테고리 갯수를 선언해준다. # 30
 
+#이미지 크기를 지정해준다.
+image_w = 150 
+image_h = 150
+pixels = image_w * image_h * 3
 
-image_w = 64
-image_h = 64
-# 데이터 열기 
-x_train, x_test, y_train, y_test = np.load("d:/project/final.npy", allow_pickle=True) #npy파일 불러올때 에러가 난다. allow_pickle 을 True로 해주면 해결됨
-# 데이터 정규화하기(0~1사이로)
-x_train = x_train.astype("float") / 256
-x_test = x_test.astype("float") / 256
+# 이미지 작업된 것 들을 리스트로 반환 받음
+x = [] 
+y = []
+
+for idx, cat in enumerate(categories):
+    label = [0 for i in range(classes)]     #카테고리를 0값으로 모두 지정해줌
+    #print(label)
+    label[idx] = 1                          #각 카테고리별 인덱스 값을 정해줌
+    #print(label)
+    image_dir = actor_face_dir + "/" + cat  #이미지 폴더 안에 지정한 각 카테고리포함
+    #print(image_dir)
+    files = glob.glob(image_dir + "/*.jpg") #해당 디렉토리 안에 지정한 확장자파일들을 리스트로 받아옴 
+    for i, f in enumerate(files):           #자료형을 순서대로 입력받아 인덱스값을 포함하는 객체를 리턴
+        img = Image.open(f)                 #폴더안에 이미지 열어서 작업
+        img = img.convert("RGB")
+        img = img.resize((image_w, image_h))
+        data = np.asarray(img)              #numpy 배열로 변환
+        x.append(data)
+        y.append(label)
+        if i % 10 == 0:
+            (i,"\n", data)
+    
+                                 
+x = np.array(x)
+y = np.array(y)
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25)
+xy = (x_train, x_test, y_train, y_test)
+#print(x_train.shape, y_train.shape)
+#print(x_test.shape, y_test.shape)
+#print(xy)
+# x_train, x_test, y_train, y_test = np.load('d:/project/test.npy')
+#img를 array로 변환시 0~255의 값을 가지는데 이것을 0~1로 변환
+#print(x_train)
+x_train = x_train.astype("float") / 255
+x_test = x_test.astype("float") / 255
 #print(x_train.shape) #(2250, 150, 150, 3) 
 #print(x_train.shape[1:]) 
 
@@ -56,7 +90,8 @@ print(model.summary())
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 hist = model.fit(x_train, y_train, 
                  epochs=200, 
-                 validation_split=0.2
+                 validation_split=0.2,
+                 batch_size = 32
                  )
 
 # 4. 평가 
@@ -70,7 +105,7 @@ val_loss = hist.history['val_loss']
 # 5. 평가이미지 넣는곳
 
 #predict할 이미지를 선언해준다
-img = "3 (39)" 
+img = "img53"
 
 test_image = 'd:/project/img/'+img+'.jpg'
 
@@ -94,10 +129,12 @@ print('val_accuracy : ', val_accuracy[-1])
 print('accuracy : ', accuracy[-1])
 print('val_loss : ', val_loss[-1])
 print("="*100)
+
 print('배우이름 : ',categories[result[0]])
+from sklearn.metrics import accuracy_score
+#acc=accuracy_score(y_test,x_test)
+#print('acc score :', acc)
 
-
-#영화추천
 import pandas as pd
 from tabulate import tabulate
 path = 'C:/home_study/home_study/'
@@ -110,5 +147,5 @@ print("="*100)
 #평가된 결과값과 동일한 배우코드의 필모그래피중 평점이 5.0이상인 영화 1개를 출력
 df1 = df1[(df1['배우코드'] == categories[result[0]]) & (df1['평점']>5.0)]
 #직관적으로 보이게 하기 위해 tabulate 를 사용
-print(tabulate(df1.head(1), headers='keys', tablefmt='psql', showindex=True))
+print(tabulate(df1.head(4), headers='keys', tablefmt='psql', showindex=True))
 print("="*100)

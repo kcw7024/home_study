@@ -48,9 +48,10 @@ model.add(Dense(30, activation='softmax'))
 
 model.compile(loss ='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-#배치를 최대로 잡으면 이방법도 가능
-
 hist = model.fit(x_train, y_train, epochs=300, batch_size=128, validation_split=0.2) 
+
+# 4. 평가 
+score = model.evaluate(x_test, y_test)
 
 accuracy = hist.history['accuracy']
 val_accuracy = hist.history['val_accuracy']
@@ -63,11 +64,50 @@ print('val_accuracy : ', val_accuracy[-1])
 print('accuracy : ', accuracy[-1])
 print('val_loss : ', val_loss[-1])
 
+# 5. 평가이미지 넣는곳
 
-#4. 평가, 훈련
+#predict할 이미지를 선언해준다
+img = "img42" #정우성이미지로 테스트
 
+test_image = 'd:/project/img/'+img+'.jpg'
 
-y_predict = model.predict(test)
-print(y_predict)
-y_predict = np.argmax(y_predict,axis=1)
-print(y_predict)
+#평가할 이미지 수치화
+img = Image.open(test_image)
+img = img.convert("RGB")
+img = img.resize((150,150))
+data = np.asarray(img)
+x = np.array(data)
+x = x.astype("float") / 256
+x = x.reshape(-1, 150, 150,3)
+
+pred = model.predict(x)  
+#print(pred)
+result = [np.argmax(value) for value in pred]   #예측값중 가장높은 클래스 반환
+#print(result)
+
+print("="*100)
+print('loss : ', loss[-1])
+print('val_accuracy : ', val_accuracy[-1])
+print('accuracy : ', accuracy[-1])
+print('val_loss : ', val_loss[-1])
+print("="*100)
+
+print('배우이름 : ',categories[result[0]])
+from sklearn.metrics import accuracy_score
+#acc=accuracy_score(y_test,x_test)
+#print('acc score :', acc)
+
+import pandas as pd
+from tabulate import tabulate
+path = 'C:/home_study/home_study/'
+recommend  = pd.read_csv(path + 'actor_filmo_n_score.csv')
+
+df1 = pd.DataFrame(recommend) #불러온 csv 파일 데이터프레임으로 변경
+df1 = df1.sort_values(by='평점', ascending=False) #평점높은순으로 정렬함
+df1 = df1.drop(columns=['Unnamed: 0']) #필요없는 컬럼은 지워줌
+print("="*100)
+#평가된 결과값과 동일한 배우코드의 필모그래피중 평점이 5.0이상인 영화 1개를 출력
+df1 = df1[(df1['배우코드'] == categories[result[0]]) & (df1['평점']>5.0)]
+#직관적으로 보이게 하기 위해 tabulate 를 사용
+print(tabulate(df1.head(3), headers='keys', tablefmt='psql', showindex=True))
+print("="*100)
