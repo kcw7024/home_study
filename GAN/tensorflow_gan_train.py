@@ -1,75 +1,183 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Dec 29 12:06:04 2020
-@author: pod LAB. Kim Jongwon
-"""
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torchvision.utils as utils
+import torchvision.datasets as dsets
+import torchvision.transforms as transforms
+from torchvision.utils import save_image
+import torchvision
 
-import tensorflow as tf
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from scipy import io
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
-mnist_x = io.loadmat('train_input.mat')['images']
-minst_y = io.loadmat('train_output.mat')['y']
-mnist_x = mnist_x.astype('float32')
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+print(f"device = {device}")
+sample_dir = 'samples'
+if not os.path.exists(sample_dir):
+    os.makedirs(sample_dir)
+   
+# Hyper-parameters
+latent_size = 64
+hidden_size = 256
+image_size = 784
+num_epochs = 200
+batch_size = 100
+sample_dir = 'samples'
 
-# Generator
-Generator = tf.keras.Sequential([
-    tf.keras.layers.Input(256,30),
-    tf.keras.layers.Dense(256, activation='relu'),
-    tf.keras.layers.Dense(784, activation='sigmoid')])
+# Create a directory if not exists
+if not os.path.exists(sample_dir):
+    os.makedirs(sample_dir)
+
+# Image processing
+# transform = transforms.Compose([
+#                 transforms.ToTensor(),
+#                 transforms.Normalize(mean=(0.5, 0.5, 0.5),   # 3 for RGB channels
+#                                      std=(0.5, 0.5, 0.5))])
+transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.5],   # 1 for greyscale channels
+                                     std=[0.5])])
+
+# MNIST dataset
+mnist = torchvision.datasets.MNIST(root='../../data/',
+                                   train=True,
+                                   transform=transform,
+                                   download=True)
+
+# Data loader
+data_loader = torch.utils.data.DataLoader(dataset=mnist,
+                                          batch_size=batch_size, 
+                                          shuffle=True)
 
 # Discriminator
-Discriminator = tf.keras.Sequential([
-    tf.keras.layers.Input(784),
-    tf.keras.layers.Dense(256, activation='relu'),
-    tf.keras.layers.Dense(1, activation='sigmoid')])
+D = nn.Sequential(
+    nn.Linear(image_size, hidden_size),
+    nn.LeakyReLU(0.2),
+    nn.Linear(hidden_size, hidden_size),
+    nn.LeakyReLU(0.2),
+    nn.Linear(hidden_size, 1),
+    nn.Sigmoid())
 
-Doptimizer = tf.keras.optimizers.Adam(0.001)
-Goptimizer = tf.keras.optimizers.Adam(0.001)
+# Generator 
+G = nn.Sequential(
+    nn.Linear(latent_size, hidden_size),
+    nn.ReLU(),
+    nn.Linear(hidden_size, hidden_size),
+    nn.ReLU(),
+    nn.Linear(hidden_size, image_size),
+    nn.Tanh())
 
-def get_noise(batch_size,n_noise):
-    return tf.random.normal([batch_size,n_noise])
+# Device setting
+D = D.to(device)
+G = G.to(device)
 
-@tf.function
-def train_step(inputs):
+# Binary cross entropy loss and optimizer
+criterion = nn.BCELoss()
+d_optimizer = torch.optim.Adam(D.parameters(), lr=0.0002)
+g_optimizer = torch.optim.Adam(G.parameters(), lr=0.0002)
 
-    with tf.GradientTape() as t1, tf.GradientTape() as t2:
+def denorm(x):
+    out = (x + 1) / 2
+    return out.clamp(0, 1)
+
+def reset_grad():
+    d_optimizer.zero_grad()
+    g_optimizer.zero_grad()
+
+# Start training
+dx_epoch = []
+dgx_epoch = []
+total_step = len(data_loader)
+for epoch in range(num_epochs):
+    for i, (images, _) in enumerate(data_loader):
+        images = images.reshape(batch_size, -1).to(device)
         
-        G = Generator(get_noise(30,256))
+        # Create the labels which are later used as input for the BCE loss
+        real_labels = torch.ones(batch_size, 1).to(device)
+        fake_labels = torch.zeros(batch_size, 1).to(device)
+
+        # ================================================================== #
+        #                      Train the discriminator                       #
+        # ================================================================== #
+
+        # Compute BCE_Loss using real images where BCE_Loss(x, y): - y * log(D(x)) - (1-y) * log(1 - D(x))
+        # Second term of the loss is always zero since real_labels == 1
+        outputs = D(images)
+        d_loss_real = criterion(outputs, real_labels)
+        real_score = outputs
+        
+        # Compute BCELoss using fake images
+        # First term of the loss is always zero since fake_labels == 0
+        z = torch.randn(batch_size, latent_size).to(device)
+        fake_images = G(z)
+        outputs = D(fake_images)
+        d_loss_fake = criterion(outputs, fake_labels)
+        fake_score = outputs
+        
+        # Backprop and optimize
+        d_loss = d_loss_real + d_loss_fake
+        reset_grad()
+        d_loss.backward()
+        d_optimizer.step()
+        
+        # ================================================================== #
+        #                        Train the generator                         #
+        # ================================================================== #
+
+        # Compute loss with fake images
+        z = torch.randn(batch_size, latent_size).to(device)
+        fake_images = G(z)
+        outputs = D(fake_images)
+        
+        # We train G to maximize log(D(G(z)) instead of minimizing log(1-D(G(z)))
+        # For the reason, see the last paragraph of section 3. https://arxiv.org/pdf/1406.2661.pdf
+        g_loss = criterion(outputs, real_labels)
+        
+        # Backprop and optimize
+        reset_grad()
+        g_loss.backward()
+        g_optimizer.step()
+        
+        if (i+1) % 200 == 0:
+            print('Epoch [{}/{}], Step [{}/{}], d_loss: {:.4f}, g_loss: {:.4f}, D(x): {:.2f}, D(G(z)): {:.2f}' 
+                  .format(epoch, num_epochs, i+1, total_step, d_loss.item(), g_loss.item(), 
+                          real_score.mean().item(), fake_score.mean().item()))
     
-        Z = Discriminator(G)
-        R = Discriminator(inputs)   
-        loss_D = -tf.reduce_mean(tf.math.log(R) + tf.math.log(1 - Z))
-        loss_G = -tf.reduce_mean(tf.math.log(Z))
-          
-    Dgradients = t1.gradient(loss_D, Discriminator.trainable_variables)
-    Doptimizer.apply_gradients(zip(Dgradients, Discriminator.trainable_variables))
+    dx_epoch.append(real_score.mean().item())            
+    dgx_epoch.append(fake_score.mean().item())
     
-    Ggradients = t2.gradient(loss_G,Generator.trainable_variables)
-    Goptimizer.apply_gradients(zip(Ggradients, Generator.trainable_variables))    
-        
-   
-total_batch = int(60000/30) 
-        
-for epoch in tf.range(15):
-    k = 0
-    for i in tf.range(total_batch):
-        batch_input = mnist_x.T[i*30:(i+1)*30]
+    # Save real images
+    if (epoch+1) == 1:
+        images = images.reshape(images.size(0), 1, 28, 28)
+        save_image(denorm(images), os.path.join(sample_dir, 'real_images.png'))
     
-        inputs = tf.Variable([batch_input],tf.float32)
-        train_step(inputs)
-        print(k)
-        k = k + 1
+    # Save sampled images
+    fake_images = fake_images.reshape(fake_images.size(0), 1, 28, 28)
+    save_image(denorm(fake_images), os.path.join(sample_dir, 'fake_images-{}.png'.format(epoch+1)))
 
-        if k%100 == 0:
-            G = Generator(get_noise(10,256))
-        
-            fig, ax = plt.subplots(1,10 ,figsize=(10, 1))
-                
-            for j in range(10):
-                ax[j].set_axis_off()
-                ax[j].imshow(np.reshape(G[j], (28, 28)).T,cmap='gray')
-            plt.pause(0.001)
-            plt.show()
+# Save the model checkpoints 
+torch.save(G.state_dict(), 'G.ckpt')
+torch.save(D.state_dict(), 'D.ckpt')
+
+# plot    
+plt.figure(figsize = (12, 8))
+plt.xlabel('epoch')
+plt.ylabel('score')
+x = np.arange(num_epochs)
+plt.plot(x, dx_epoch, 'g', label='D(x)')
+plt.plot(x, dgx_epoch, 'b', label='D(G(z))')
+plt.legend()
+plt.show()
+
+
+
+  
+    
+
+
+
+    
