@@ -1,4 +1,6 @@
 data/
+_data/
+training_checkpoints/
 samples/fake_images-1.png
 samples/fake_images-2.png
 samples/fake_images-3.png
