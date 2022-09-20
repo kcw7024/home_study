@@ -1,6 +1,4 @@
 data/
-D.ckpt
-G.ckpt
 samples/fake_images-1.png
 samples/fake_images-2.png
 samples/fake_images-3.png
@@ -202,3 +200,8 @@ samples/fake_images-198.png
 samples/fake_images-199.png
 samples/fake_images-200.png
 samples/real_images.png
+Yolo/cat.jpg
+Yolo/dnr.jpg
+Yolo/test.jpg
+Yolo/test2.jpg
+Yolo/test3.jpg

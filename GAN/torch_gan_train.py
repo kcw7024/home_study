@@ -92,6 +92,7 @@ def reset_grad():
 dx_epoch = []
 dgx_epoch = []
 total_step = len(data_loader)
+
 for epoch in range(num_epochs):
     for i, (images, _) in enumerate(data_loader):
         images = images.reshape(batch_size, -1).to(device)
