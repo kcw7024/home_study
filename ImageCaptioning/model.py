@@ -56,7 +56,7 @@ class RNN_Decoder(tf.keras.Model):
                                    return_sequences=True,
                                    return_state=True,
                                    recurrent_initializer='glorot_uniform')
-    self.fc1 = tf.keras.layers.Dense(self.units)
+    self.fc1 = tf.keras.layers.Dense(self.units) 
     self.fc2 = tf.keras.layers.Dense(vocab_size)
 
     self.attention = BahdanauAttention(self.units)

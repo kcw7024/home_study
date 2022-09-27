@@ -34,7 +34,7 @@ units = 512
 top_k = 5000
 vocab_size = top_k + 1
 attention_features_shape = 64
-EPOCHS = 30
+EPOCHS = 2
 
 # 빠른 학습을 위해서 shuffle된 set에서 처음 30000개만을 선택해서 데이터를 불러옵니다.
 train_captions, img_name_vector = prepare_image_and_caption_data(num_examples)
@@ -64,7 +64,7 @@ def train_step(img_tensor, target, tokenizer, encoder, decoder):
   # <start>로 decoding 문장을 시작합니다.
   dec_input = tf.expand_dims([tokenizer.word_index['<start>']] * target.shape[0], 1)
 
-  with tf.GradientTape() as tape:
+  with tf.GradientTape() as tape: 
     features = encoder(img_tensor)
 
     for i in range(1, target.shape[1]):
@@ -234,7 +234,7 @@ def main(_):
 #   plot_attention(image, result, attention_plot)
 
   # test를 위해서 surfer 이미지 한장을 다운받은뒤, 해당 이미지에 대한 captioning을 진행해봅니다.
-  image_url = 'https://i.ibb.co/c1cpc2P/test-img.jpg'
+  image_url = 'https://ifh.cc/g/1ONysf.jpg'
   image_extension = image_url[-4:]
   image_path = tf.keras.utils.get_file('image' + image_extension, origin=image_url)
 
