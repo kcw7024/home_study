@@ -7,7 +7,7 @@ import numpy as np
 import os
 import json
 from sklearn.utils import shuffle
-from tqdm import tqdm
+from tqdm import tqdm # 작업 프로세스바 표시 라이브러리
 from utils import load_image
 
 def cache_bottlenecks(img_name_vector, image_features_extract_model):
