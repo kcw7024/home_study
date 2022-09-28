@@ -26,7 +26,7 @@ flags.DEFINE_bool(
 FLAGS = flags.FLAGS
 
 # 학습을 위한 설정값들을 지정합니다.
-num_examples = 30000
+num_examples = 100000
 BATCH_SIZE = 64
 BUFFER_SIZE = 1000
 embedding_dim = 256
