@@ -205,23 +205,24 @@ plot_model(model, show_shapes=True)
 
 
 # train the model
-print('start training...')
-epochs = 50
-batch_size = 32
-steps = len(train) // batch_size
+# print('start training...')
+# epochs = 50
+# batch_size = 32
+# steps = len(train) // batch_size
 
-for i in range(epochs):
-    # create data generator
-    generator = data_generator(train, mapping, features, tokenizer, max_length, vocab_size, batch_size)
-    # fit for one epoch
-    model.fit(generator, epochs=1, steps_per_epoch=steps, verbose=1)
-print('done training.')      
+# for i in range(epochs):
+#     # create data generator
+#     generator = data_generator(train, mapping, features, tokenizer, max_length, vocab_size, batch_size)
+#     # fit for one epoch
+#     model.fit(generator, epochs=1, steps_per_epoch=steps, verbose=1)
+# print('done training.')      
                 
 # save the model
 # model.save(WORKING_DIR+'/best_model.h5')
 
 # model.load_weights(WORKING_DIR+"best_model.h5")
-model.save_weights(WORKING_DIR+'/best_weights.h5')
+# model.save_weights(WORKING_DIR+'/best_weights.h5')
+# model.load_weights(WORKING_DIR+'/best_weights.h5')
 
 def idx_to_word(integer, tokenizer):
     for word, index in tokenizer.word_index.items():
@@ -302,7 +303,7 @@ def generate_caption(image_name):
 
 
 print('prediction..')
-image = load_img('D:\home_study\ImageCaption2/test_img.jpg', target_size=(224, 224))
+image = load_img('D:\home_study\ImageCaption2/w1.jpg', target_size=(224, 224))
 # convert image pixels to numpy array
 image = img_to_array(image)
 # reshape data for model
