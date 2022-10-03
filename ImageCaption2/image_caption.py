@@ -101,6 +101,8 @@ def clean(mapping):
             captions[i] = caption
             
 
+
+
 # before preprocess of text
 print('bf_text:', mapping['1000268201_693b08cb0e'])
 
