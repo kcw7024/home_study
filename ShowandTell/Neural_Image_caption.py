@@ -537,79 +537,79 @@ BLEU Score 계산
 # total_step = len(test_data_loader)
 # cnt = 0
 
-# with torch.no_grad():
-#     for i, (images, captions, lengths) in enumerate(test_data_loader):
-#         images = images.to(device)
-#         captions = captions.to(device)
+with torch.no_grad():
+    for i, (images, captions, lengths) in enumerate(test_data_loader):
+        images = images.to(device)
+        captions = captions.to(device)
 
-#         # 순전파(forward) 진행
-#         features = encoder(images)
-#         sampled_ids_list = decoder.sample(features)
+        # 순전파(forward) 진행
+        features = encoder(images)
+        sampled_ids_list = decoder.sample(features)
 
-#         for index in range(len(images)):
-#             sampled_ids = sampled_ids_list[index].cpu().numpy()
+        for index in range(len(images)):
+            sampled_ids = sampled_ids_list[index].cpu().numpy()
 
-#             # 정답 문장(answer sentences)
-#             answer = []
-#             for word_id in captions[index]: # 하나씩 단어 인덱스를 확인하며
-#                 word = vocab.idx2word[word_id.item()] # 단어 문자열로 바꾸어 삽입
-#                 answer.append(word)
-#                 if word == '<end>':
-#                     break
-#             answers_per_image.append(answer[1:-1]) # 정답 문장을 삽입 (<sos>과 <eos>는 제외)
+            # 정답 문장(answer sentences)
+            answer = []
+            for word_id in captions[index]: # 하나씩 단어 인덱스를 확인하며
+                word = vocab.idx2word[word_id.item()] # 단어 문자열로 바꾸어 삽입
+                answer.append(word)
+                if word == '<end>':
+                    break
+            answers_per_image.append(answer[1:-1]) # 정답 문장을 삽입 (<sos>과 <eos>는 제외)
 
-#             if (cnt + 1) % 5 == 0: # 이미지당 캡션이 5개씩 존재
-#                 answers.append(answers_per_image) # 5개를 한꺼번에 리스트로 삽입
-#                 answers_per_image = []
+            if (cnt + 1) % 5 == 0: # 이미지당 캡션이 5개씩 존재
+                answers.append(answers_per_image) # 5개를 한꺼번에 리스트로 삽입
+                answers_per_image = []
 
-#                 # 예측한 문장(predicted sentences)
-#                 prediction = []
-#                 for word_id in sampled_ids: # 하나씩 단어 인덱스를 확인하며
-#                     word = vocab.idx2word[word_id] # 단어 문자열로 바꾸어 삽입
-#                     prediction.append(word)
-#                     if word == '<end>':
-#                         break
-#                 predictions.append(prediction[1:-1]) # 예측한 문장에 대해서는 1개만 삽입 (<sos>과 <eos>는 제외)
-#             cnt += 1
+                # 예측한 문장(predicted sentences)
+                prediction = []
+                for word_id in sampled_ids: # 하나씩 단어 인덱스를 확인하며
+                    word = vocab.idx2word[word_id] # 단어 문자열로 바꾸어 삽입
+                    prediction.append(word)
+                    if word == '<end>':
+                        break
+                predictions.append(prediction[1:-1]) # 예측한 문장에 대해서는 1개만 삽입 (<sos>과 <eos>는 제외)
+            cnt += 1
 
-#         if i % log_step == 0:
-#             print(f"[ Testing ] Batch size: {i}/{total_step}")
+        if i % log_step == 0:
+            print(f"[ Testing ] Batch size: {i}/{total_step}")
             
-# print("예측한 문장의 수:", len(predictions))
-# print("정답 문장 집합의 수 (5개씩):", len(answers))
+print("예측한 문장의 수:", len(predictions))
+print("정답 문장 집합의 수 (5개씩):", len(answers))
 
-# index = 2
-# print("[ 정답 캡션들 ]")
-# for answer in answers[index]:
-#     print(answer)
+index = 2
+print("[ 정답 캡션들 ]")
+for answer in answers[index]:
+    print(answer)
 
-# print("[ 예측된 캡션 ]")
-# print(predictions[index])
+print("[ 예측된 캡션 ]")
+print(predictions[index])
 
-# from torchtext.data.metrics import bleu_score
+from torchtext.data.metrics import bleu_score
 
-# bleu = bleu_score(predictions, answers, max_n=4, weights=[0.25, 0.25, 0.25, 0.25])
-# print(f'Total BLEU Score = {bleu * 100:.2f}')
+bleu = bleu_score(predictions, answers, max_n=4, weights=[0.25, 0.25, 0.25, 0.25])
+print(f'Total BLEU Score = {bleu * 100:.2f}')
 
-# individual_bleu1_score = bleu_score(predictions, answers, max_n=4, weights=[1, 0, 0, 0])
-# individual_bleu2_score = bleu_score(predictions, answers, max_n=4, weights=[0, 1, 0, 0])
-# individual_bleu3_score = bleu_score(predictions, answers, max_n=4, weights=[0, 0, 1, 0])
-# individual_bleu4_score = bleu_score(predictions, answers, max_n=4, weights=[0, 0, 0, 1])
+individual_bleu1_score = bleu_score(predictions, answers, max_n=4, weights=[1, 0, 0, 0])
+individual_bleu2_score = bleu_score(predictions, answers, max_n=4, weights=[0, 1, 0, 0])
+individual_bleu3_score = bleu_score(predictions, answers, max_n=4, weights=[0, 0, 1, 0])
+individual_bleu4_score = bleu_score(predictions, answers, max_n=4, weights=[0, 0, 0, 1])
 
-# print(f'Individual BLEU1 score = {individual_bleu1_score * 100:.2f}') 
-# print(f'Individual BLEU2 score = {individual_bleu2_score * 100:.2f}') 
-# print(f'Individual BLEU3 score = {individual_bleu3_score * 100:.2f}') 
-# print(f'Individual BLEU4 score = {individual_bleu4_score * 100:.2f}') 
+print(f'Individual BLEU1 score = {individual_bleu1_score * 100:.2f}') 
+print(f'Individual BLEU2 score = {individual_bleu2_score * 100:.2f}') 
+print(f'Individual BLEU3 score = {individual_bleu3_score * 100:.2f}') 
+print(f'Individual BLEU4 score = {individual_bleu4_score * 100:.2f}') 
 
-# cumulative_bleu1_score = bleu_score(predictions, answers, max_n=4, weights=[1, 0, 0, 0])
-# cumulative_bleu2_score = bleu_score(predictions, answers, max_n=4, weights=[1/2, 1/2, 0, 0])
-# cumulative_bleu3_score = bleu_score(predictions, answers, max_n=4, weights=[1/3, 1/3, 1/3, 0])
-# cumulative_bleu4_score = bleu_score(predictions, answers, max_n=4, weights=[1/4, 1/4, 1/4, 1/4])
+cumulative_bleu1_score = bleu_score(predictions, answers, max_n=4, weights=[1, 0, 0, 0])
+cumulative_bleu2_score = bleu_score(predictions, answers, max_n=4, weights=[1/2, 1/2, 0, 0])
+cumulative_bleu3_score = bleu_score(predictions, answers, max_n=4, weights=[1/3, 1/3, 1/3, 0])
+cumulative_bleu4_score = bleu_score(predictions, answers, max_n=4, weights=[1/4, 1/4, 1/4, 1/4])
 
-# print(f'Cumulative BLEU1 score = {cumulative_bleu1_score * 100:.2f}') 
-# print(f'Cumulative BLEU2 score = {cumulative_bleu2_score * 100:.2f}') 
-# print(f'Cumulative BLEU3 score = {cumulative_bleu3_score * 100:.2f}') 
-# print(f'Cumulative BLEU4 score = {cumulative_bleu4_score * 100:.2f}') 
+print(f'Cumulative BLEU1 score = {cumulative_bleu1_score * 100:.2f}') 
+print(f'Cumulative BLEU2 score = {cumulative_bleu2_score * 100:.2f}') 
+print(f'Cumulative BLEU3 score = {cumulative_bleu3_score * 100:.2f}') 
+print(f'Cumulative BLEU4 score = {cumulative_bleu4_score * 100:.2f}') 
 
 
 

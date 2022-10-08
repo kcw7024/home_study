@@ -18,6 +18,8 @@ from model import BahdanauAttention, CNN_Encoder, RNN_Decoder
 from utils import load_image, calc_max_length, plot_attention
 from data_utils import cache_bottlenecks, maybe_download_and_extract, prepare_image_and_caption_data
 
+
+
 flags.DEFINE_bool(
     'do_caching',
     default=True,
