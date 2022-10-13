@@ -120,6 +120,9 @@ for word in words:
 with open(vocab_path, 'wb') as f:
     pickle.dump(vocab, f)
 
+
+
+
 '''
 # 학습(train) 데이터셋의 캡션 수
 !wc -l ./resized_train/captions.txt
