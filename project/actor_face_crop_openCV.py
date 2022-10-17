@@ -24,7 +24,10 @@ def Cutting_face_save(image, name):
         resize = cv2.resize(cropped, (250,250))
         # cv2.imshow("crop&resize", resize)
         # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+        # cv2.destroyAllWindows()        
+        
+        
+        
 
         # 이미지 저장하기
         cv2.imwrite(f"d:/project/actor/test_face/{name}.jpg", resize)
