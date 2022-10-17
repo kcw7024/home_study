@@ -36,7 +36,11 @@ units = 512
 top_k = 5000
 vocab_size = top_k + 1
 attention_features_shape = 64
+<<<<<<< HEAD
+EPOCHS = 30
+=======
 EPOCHS = 50
+>>>>>>> fb41631651e8a0b66988ed68ab0de0da14a4493b
 
 # 빠른 학습을 위해서 shuffle된 set에서 처음 30000개만을 선택해서 데이터를 불러옵니다.
 train_captions, img_name_vector = prepare_image_and_caption_data(num_examples)
