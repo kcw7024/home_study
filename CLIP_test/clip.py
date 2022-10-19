@@ -12,6 +12,7 @@ from torch import nn
 import torch.nn.functional as F
 import timm
 from transformers import DistilBertModel, DistilBertConfig, DistilBertTokenizer
+from multiprocessing import freeze_support
 
 from PIL import __version__
 print(__version__)
@@ -291,6 +292,10 @@ def build_loaders(dataframe, tokenizer, mode):
     )
     return dataloader
 
+
+
+
+
 def train_epoch(model, train_loader, optimizer, lr_scheduler, step):
     loss_meter = AvgMeter()
     tqdm_object = tqdm(train_loader, total=len(train_loader))
@@ -307,6 +312,7 @@ def train_epoch(model, train_loader, optimizer, lr_scheduler, step):
         loss_meter.update(loss.item(), count)
 
         tqdm_object.set_postfix(train_loss=loss_meter.avg, lr=get_lr(optimizer))
+
     return loss_meter
 
 
@@ -323,6 +329,15 @@ def valid_epoch(model, valid_loader):
 
         tqdm_object.set_postfix(valid_loss=loss_meter.avg)
     return loss_meter
+
+# freeze error 때문에 추가
+def run():
+    torch.multiprocessing.freeze_support()
+    print('loop')
+
+if __name__ == '__main__':
+    run()
+
 
 
 def main():
@@ -362,7 +377,11 @@ def main():
         
         lr_scheduler.step(valid_loss.avg)
     
+
 main()
+
+
+
 
 
 def get_image_embeddings(valid_df, model_path):
@@ -383,6 +402,8 @@ def get_image_embeddings(valid_df, model_path):
 
 _, valid_df = make_train_valid_dfs()
 model, image_embeddings = get_image_embeddings(valid_df, "best.pt")
+
+
 
 def find_matches(model, image_embeddings, query, image_filenames, n=9):
     tokenizer = DistilBertTokenizer.from_pretrained(CFG.text_tokenizer)
