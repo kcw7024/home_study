@@ -192,12 +192,15 @@ fe2 = Dense(256, activation='relu')(fe1)
 inputs2 = Input(shape=(max_length,))
 se1 = Embedding(vocab_size, 256, mask_zero=True)(inputs2)
 se2 = Dropout(0.4)(se1)
-se3 = LSTM(256)(se2)
+se3 = Dense(256)(se2)
 
 # decoder model
 decoder1 = add([fe2, se3])
-decoder2 = Dense(256, activation='relu')(decoder1)
-outputs = Dense(vocab_size, activation='softmax')(decoder2)
+decoder2 = LSTM(256, return_sequences=True)(decoder1)
+decoder3 = LSTM(256, return_sequences=True)(decoder2)
+decoder4 = LSTM(256)(decoder3)
+decoder5 = Dense(256, activation='relu')(decoder4)
+outputs = Dense(vocab_size, activation='softmax')(decoder5)
 
 model = Model(inputs=[inputs1, inputs2], outputs=outputs)
 model.compile(loss='categorical_crossentropy', optimizer='adam')
@@ -284,24 +287,24 @@ print("BLEU-2: %f" % corpus_bleu(actual, predicted, weights=(0.5, 0.5, 0, 0)))
 
 
 
-from PIL import Image
-import matplotlib.pyplot as plt
-def generate_caption(image_name):
-    # load the image
-    # image_name = "1001773457_577c3a7d70.jpg"
-    image_id = image_name.split('.')[0]
-    img_path = os.path.join(BASE_DIR, "Images", image_name)
-    image = Image.open(img_path)
-    captions = mapping[image_id]
-    print('---------------------Actual---------------------')
-    for caption in captions:
-        print(caption)
-    # predict the caption
-    y_pred = predict_caption(model, features[image_id], tokenizer, max_length)
-    print('--------------------Predicted--------------------')
-    print(y_pred)
-    plt.imshow(image)
-    plt.show()
+# from PIL import Image
+# import matplotlib.pyplot as plt
+# def generate_caption(image_name):
+#     # load the image
+#     # image_name = "1001773457_577c3a7d70.jpg"
+#     image_id = image_name.split('.')[0]
+#     img_path = os.path.join(BASE_DIR, "Images", image_name)
+#     image = Image.open(img_path)
+#     captions = mapping[image_id]
+#     print('---------------------Actual---------------------')
+#     for caption in captions:
+#         print(caption)
+#     # predict the caption
+#     y_pred = predict_caption(model, features[image_id], tokenizer, max_length)
+#     print('--------------------Predicted--------------------')
+#     print(y_pred)
+#     plt.imshow(image)
+#     plt.show()
 
 
 print('prediction..')

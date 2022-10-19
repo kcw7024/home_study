@@ -7,20 +7,15 @@ import itertools
 from tqdm.autonotebook import tqdm
 import albumentations as A
 import matplotlib.pyplot as plt
-
 import torch
 from torch import nn
 import torch.nn.functional as F
 import timm
 from transformers import DistilBertModel, DistilBertConfig, DistilBertTokenizer
 
-# !pip install kaggle --upgrade
-os.environ['KAGGLE_USERNAME'] = "kwonchowon"
-os.environ['KAGGLE_KEY'] = "547ed5f67723a40878df55ef2f43ca02"
+from PIL import __version__
+print(__version__)
 
-### For Flickr 30k
-# !kaggle datasets download -d hsankesara/flickr-image-dataset
-# !unzip flickr-image-dataset.zip
 dataset = "30k"
 
 if dataset == "8k":
@@ -31,7 +26,7 @@ if dataset == "8k":
   image_path = "/content/Images"
   captions_path = "/content"
 elif dataset == "30k":
-  df = pd.read_csv("/content/flickr30k_images/results.csv", delimiter="|")
+  df = pd.read_csv("content/flickr30k_images/results.csv", delimiter="|")
   df.columns = ['image', 'caption_number', 'caption']
   df['caption'] = df['caption'].str.lstrip()
   df['caption_number'] = df['caption_number'].str.lstrip()
@@ -39,11 +34,11 @@ elif dataset == "30k":
   df.loc[19999, 'caption'] = "A dog runs across the grass ."
   ids = [id_ for id_ in range(len(df) // 5) for _ in range(5)]
   df['id'] = ids
-  df.to_csv("captions.csv", index=False)
-  image_path = "/content/flickr30k_images/flickr30k_images"
-  captions_path = "/content"
+  df.to_csv("content/captions.csv", index=False)
+  image_path = "content/flickr30k_images/flickr30k_images"
+  captions_path = "content/"
 
-df.head()
+print(df.head())
 
 class CFG:
     debug = False
