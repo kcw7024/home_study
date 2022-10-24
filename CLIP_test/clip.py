@@ -18,6 +18,7 @@ print(__version__)
 
 dataset = "30k"
 
+
 if dataset == "8k":
   df = pd.read_csv("captions.txt")
   df['id'] = [id_ for id_ in range(df.shape[0] // 5) for _ in range(5)]
