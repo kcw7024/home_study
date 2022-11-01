@@ -233,6 +233,8 @@ class CLIPModel(nn.Module):
         image_embeddings = self.image_projection(image_features)
         text_embeddings = self.text_projection(text_features)
 
+
+
         # Calculating the Loss
         logits = (text_embeddings @ image_embeddings.T) / self.temperature
         images_similarity = image_embeddings @ image_embeddings.T
