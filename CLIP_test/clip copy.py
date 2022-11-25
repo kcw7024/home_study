@@ -53,7 +53,7 @@ class CFG: # 사용될 구성에대한 정의
     weight_decay = 1e-3 # 0.001
     patience = 1
     factor = 0.8
-    epochs = 1
+    epochs = 10
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model_name = 'resnet50'
